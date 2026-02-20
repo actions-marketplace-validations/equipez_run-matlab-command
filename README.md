@@ -108,12 +108,19 @@ This action performs the following steps.
 
 This action executes MATLAB via MathWorks’ `run-matlab-command` utility, which is designed for CI usage.
 In some CI configurations, invoking the MATLAB executable directly (for example `matlab -batch`) may fail due
-to licensing/activation context, whereas `run-matlab-command` works reliably. Note, however, that
-`run-matlab-command` is undocumented and not officially supported by MathWorks, so use at your own
+to licensing/activation context, whereas `run-matlab-command` works reliably.
+
+Note, however, that MathWorks' `run-matlab-command` is undocumented and not officially supported by MathWorks,
+so use at your own
 risk. See https://github.com/matlab-actions/run-command/issues/53 for more discussion.
 
-If `run-matlab-command` is not found on `PATH`, this action can download and install it automatically
-(see the `install-run-matlab-command` input).
+If MathWorks' `run-matlab-command` stops working, consider using the officially supported
+[`matlab-batch` utility](https://github.com/mathworks-ref-arch/matlab-dockerfile/blob/main/alternates/non-interactive/MATLAB-BATCH.md).
+`matlab-batch` needs a [MATLAB batch licensing token](https://github.com/matlab-actions#use-matlab-batch-licensing-token)
+provided with the `MLM_LICENSE_TOKEN` environment variable via a [secret](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets).
+For details on using `matlab-batch` and MATLAB batch licensing token, see
+https://github.com/matlab-actions#use-matlab-batch-licensing-token and
+https://github.com/mathworks-ref-arch/matlab-dockerfile/blob/main/alternates/non-interactive/MATLAB-BATCH.md.
 
 ## License
 

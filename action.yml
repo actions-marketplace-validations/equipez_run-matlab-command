@@ -1,4 +1,4 @@
-name: run-matlab-command (with optional timeout=>success)
+name: run-matlab-command (with optional timeout => success)
 description: >
   Run MATLAB commands in CI. Optionally enforce a time limit and treat timeout as success. Supports Linux/macOS runners.
 
@@ -178,7 +178,7 @@ runs:
         echo "exit_code=$ec" >> "$GITHUB_OUTPUT"
         exit "$ec"
 
-    - name: Run MATLAB with time limit (timeout=>success)
+    - name: Run MATLAB with time limit (timeout => success)
       id: rbc
       if: ${{ inputs.timelimit != '' }}
       uses: equipez/run-bash-command@v2

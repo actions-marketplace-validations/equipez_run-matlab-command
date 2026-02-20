@@ -117,7 +117,7 @@ runs:
         echo "If the binary stops working, consider using the officially supported matlab-batch utility." >&2
         echo "matlab-batch needs a MATLAB batch licensing token provided with the MLM_LICENSE_TOKEN environment variable via a secret." >&2
         echo "For details on using matlab-batch and MATLAB batch licensing token, see" >&2
-        echo "https://github.com/matlab-actions#use-matlab-batch-licensing-token" >&2"
+        echo "https://github.com/matlab-actions#use-matlab-batch-licensing-token" >&2
         echo "https://github.com/mathworks-ref-arch/matlab-dockerfile/blob/main/alternates/non-interactive/MATLAB-BATCH.md" >&2
         echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >&2
         echo ""

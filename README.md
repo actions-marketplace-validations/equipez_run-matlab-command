@@ -5,12 +5,21 @@ Optionally enforce a `timeout` and treat timeout as **success** (exit code `0`).
 
 This action is designed for long-running stress tests where “ran long enough without crashing” is considered a pass.
 
-## Supported runners
+## Supported runners / platforms
 
-- `ubuntu-latest`
-- `macos-latest`
+This action supports **Linux** and **macOS** runners (GitHub-hosted or self-hosted), for example:
 
-(Windows is intentionally not supported.)
+- `ubuntu-latest`, `ubuntu-22.04`, `ubuntu-24.04`
+- `macos-latest`, `macos-13`, `macos-14` (Intel or Apple Silicon)
+
+Windows is **not** supported.
+
+### Requirements on the runner
+
+- Bash
+- `curl` (used to download MathWorks `run-matlab-command` if it is not already available)
+- For timeout support: GNU `timeout` (Linux) or `gtimeout` (macOS).
+  On macOS, timeout support is provided via `coreutils` (see the section on timeout behavior below).
 
 ## Prerequisites
 
@@ -37,17 +46,38 @@ This action only runs commands; it does not set up MATLAB licensing by itself.
 
 ### Timeout that becomes success
 
-If the commands are still running after `5h`, the step is terminated and treated as success.
+- If the MATLAB command finishes **before** the timeout:
+  - exit code `0` → step succeeds
+  - exit code nonzero → step fails (propagates the exit code)
+- If the timeout is **reached**:
+  - the MATLAB command is terminated
+  - the step is treated as **success** (exit `0`)
+  - output `timed_out` is set to `true`
+  - output `exit_code` is typically `124` (GNU `timeout` convention)
+
+An example:
 
 ```yaml
 - name: Stress test (timeout => success)
   uses: equipez/run-matlab-command@v1
   with:
-    timeout: 5h
+    timeout: 5h  # If the commands are still running after `5h`, the step is terminated and treated as success.
     command: |
       disp("Starting stress test");
       my_stress_test();
 ```
+
+Timeout handling is implemented by delegating to
+[`equipez/success-on-timeout`](https://github.com/equipez/success-on-timeout),
+which wraps the underlying command using GNU `timeout`:
+
+- On **Linux**: uses `timeout`
+- On **macOS**: uses `gtimeout` (from Homebrew `coreutils`
+
+### Note about exit code 124
+
+GNU `timeout` returns `124` when a timeout occurs. If the wrapped command itself returns `124`,
+it may be indistinguishable from a timeout under the current design of the timeout wrapper.
 
 ## Inputs
 
@@ -76,6 +106,15 @@ If the commands are still running after `5h`, the step is terminated and treated
 2. Writes your `command` into a temporary `.m` file.
 3. Executes `run-matlab-command "run('<file>');"`.
 4. If `timeout` is set, wraps the execution using `equipez/success-on-timeout` so that timeout becomes success.
+
+## Why this action uses `run-matlab-command`
+
+This action executes MATLAB via MathWorks’ `run-matlab-command` utility, which is designed for CI usage.
+In some CI configurations, invoking the MATLAB executable directly (for example `matlab -batch`) may fail due
+to licensing/activation context, whereas `run-matlab-command` works reliably.
+
+If `run-matlab-command` is not found on `PATH`, this action can download and install it automatically
+(see the `install-run-matlab-command` input).
 
 ## License
 

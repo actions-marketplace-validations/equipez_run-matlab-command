@@ -1,0 +1,179 @@
+name: run-matlab-command (with optional timeout=>success)
+description: >
+  Run MATLAB commands in CI using MathWorks run-matlab-command. Optionally enforce a timeout
+  and treat timeout as success (exit 0). Supports Linux/macOS runners.
+
+branding:
+  icon: play
+  color: blue
+
+inputs:
+  command:
+    description: MATLAB commands to execute (as in matlab-actions/run-command). Multi-line supported.
+    required: true
+
+  timeout:
+    description: >
+      Optional. If set (e.g. 5h, 45m, 300s), terminate the step after this duration and mark it as success.
+      If empty, no timeout is applied.
+    required: false
+    default: ""
+
+  working-directory:
+    description: Optional working directory in which to run the command.
+    required: false
+    default: ""
+
+  install-run-matlab-command:
+    description: Install run-matlab-command if it is not found on PATH.
+    required: false
+    default: "true"
+
+  # Passed through to success-on-timeout when timeout is set
+  signal:
+    description: Signal sent when the time limit is reached (passed to timeout/gtimeout).
+    required: false
+    default: "TERM"
+  kill-after:
+    description: Wait time before sending SIGKILL after signal (passed to timeout/gtimeout).
+    required: false
+    default: "30s"
+  quiet:
+    description: Reduce log output (passed to success-on-timeout).
+    required: false
+    default: "false"
+
+outputs:
+  timed_out:
+    description: "true if the timeout was reached (and treated as success), else false."
+    value: ${{ steps.sot.outputs.timed_out || steps.direct.outputs.timed_out }}
+  exit_code:
+    description: "Exit code of the underlying command (124 typically indicates timeout)."
+    value: ${{ steps.sot.outputs.exit_code || steps.direct.outputs.exit_code }}
+  run_matlab_command_path:
+    description: "Resolved path to run-matlab-command."
+    value: ${{ steps.install.outputs.rmc_path }}
+  script_path:
+    description: "Path to the generated .m script file."
+    value: ${{ steps.prep.outputs.script_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure bash
+      shell: bash
+      run: |
+        set -euo pipefail
+
+    - name: Install / locate run-matlab-command
+      id: install
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+
+        if command -v run-matlab-command >/dev/null 2>&1; then
+          rmc_path="$(command -v run-matlab-command)"
+          echo "Found run-matlab-command at: $rmc_path"
+          echo "rmc_path=$rmc_path" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        if [[ "${{ inputs.install-run-matlab-command }}" != "true" ]]; then
+          echo "run-matlab-command not found on PATH and install-run-matlab-command=false."
+          exit 1
+        fi
+
+        # Determine MathWorks platform code
+        case "${RUNNER_OS:-}" in
+          Linux)
+            oscode="glnxa64"
+            ;;
+          macOS)
+            arch="$(uname -m)"
+            if [[ "$arch" == "x86_64" ]]; then
+              oscode="maci64"
+            elif [[ "$arch" == "arm64" ]]; then
+              oscode="maca64"
+            else
+              echo "Unsupported macOS architecture: $arch"
+              exit 1
+            fi
+            ;;
+          *)
+            echo "Unsupported OS: ${RUNNER_OS:-unknown} (this action supports Linux/macOS only)"
+            exit 1
+            ;;
+        esac
+
+        url="https://ssd.mathworks.com/supportfiles/ci/run-matlab-command/v2/${oscode}/run-matlab-command"
+
+        base="${RUNNER_TEMP:-$HOME/tmp}"
+        mkdir -p "$base"
+        rmc_dir="$(mktemp -d "$base/run-matlab-command.XXXXXX")"
+        rmc_path="$rmc_dir/run-matlab-command"
+
+        echo "Downloading run-matlab-command from:"
+        echo "  $url"
+        curl -fsSL "$url" -o "$rmc_path"
+        chmod +x "$rmc_path"
+
+        echo "Installed run-matlab-command at: $rmc_path"
+        echo "$rmc_dir" >> "$GITHUB_PATH"
+
+        echo "rmc_path=$rmc_path" >> "$GITHUB_OUTPUT"
+
+    - name: Prepare MATLAB script
+      id: prep
+      shell: bash
+      env:
+        MATLAB_COMMAND: ${{ inputs.command }}
+      run: |
+        set -Eeuo pipefail
+
+        # Write the MATLAB commands into a temporary .m file (avoids quoting issues)
+        base="${RUNNER_TEMP:-$HOME/tmp}"
+        mkdir -p "$base"
+
+        script_path="$base/run_matlab_command_${GITHUB_RUN_ID:-0}_${GITHUB_RUN_ATTEMPT:-0}.m"
+        printf '%s\n' "$MATLAB_COMMAND" > "$script_path"
+
+        # Build MATLAB evaluation string: run('<script_path>');
+        # Escape single quotes for MATLAB string literals by doubling them.
+        esc_path="${script_path//\'/\'\'}"
+        matlab_eval="run('${esc_path}');"
+
+        echo "script_path=$script_path" >> "$GITHUB_OUTPUT"
+        echo "matlab_eval=$matlab_eval" >> "$GITHUB_OUTPUT"
+
+    - name: Run MATLAB (no timeout)
+      id: direct
+      if: ${{ inputs.timeout == '' }}
+      shell: bash
+      run: |
+        set -Eeuo pipefail
+
+        if [[ -n "${{ inputs.working-directory }}" ]]; then
+          cd "${{ inputs.working-directory }}"
+        fi
+
+        set +e
+        run-matlab-command "${{ steps.prep.outputs.matlab_eval }}"
+        ec=$?
+        set -e
+
+        echo "timed_out=false" >> "$GITHUB_OUTPUT"
+        echo "exit_code=$ec" >> "$GITHUB_OUTPUT"
+        exit "$ec"
+
+    - name: Run MATLAB with timeout (timeout=>success)
+      id: sot
+      if: ${{ inputs.timeout != '' }}
+      uses: equipez/success-on-timeout@v1
+      with:
+        time: ${{ inputs.timeout }}
+        signal: ${{ inputs.signal }}
+        kill-after: ${{ inputs.kill-after }}
+        working-directory: ${{ inputs.working-directory }}
+        quiet: ${{ inputs.quiet }}
+        command: |
+          run-matlab-command "${{ steps.prep.outputs.matlab_eval }}"

@@ -104,7 +104,18 @@ runs:
             ;;
         esac
 
+        # See https://github.com/matlab-actions/run-command/issues/53#issuecomment-3935660870 for
+        # the URL. Note the "run-matlab-command" binary is undocumented and subject to change in the future.
         url="https://ssd.mathworks.com/supportfiles/ci/run-matlab-command/v2/${oscode}/run-matlab-command"
+
+        echo "Downloading run-matlab-command from: $url"
+        echo ""
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >&2
+        echo "WARNING: This URL is corresponding to run-matlab-command v2. Check whether new versions are available!" >&2
+        echo "WARNING: This binary is not officially documented by MathWorks and may change without notice!" >&2
+        echo "See https://github.com/matlab-actions/run-command/issues/53#issuecomment-3935660870 for details." >&2
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >&2
+        echo ""
 
         base="${RUNNER_TEMP:-$HOME/tmp}"
         mkdir -p "$base"

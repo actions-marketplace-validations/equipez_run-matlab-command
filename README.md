@@ -63,7 +63,7 @@ An example:
 ```
 
 Timeout handling is implemented by delegating to
-[`equipez/success-on-timeout`](https://github.com/equipez/success-on-timeout),
+[`equipez/run-bash-command`](https://github.com/equipez/run-bash-command),
 which wraps the underlying command using GNU `timeout`:
 
 - On **Linux**: uses `timeout`
@@ -102,7 +102,7 @@ This action performs the following steps.
 1. Ensures MathWorks' `run-matlab-command` is available (downloads it from MathWorks if needed).
 2. Writes your `command` into a temporary `.m` file.
 3. Executes `run-matlab-command "run('<file>');"`.
-4. If `timeout` is set, wraps the execution using `equipez/success-on-timeout` so that timeout becomes success.
+4. If `timeout` is set, wraps the execution using `equipez/run-bash-command` so that timeout becomes success.
 
 ## About MathWorks' `run-matlab-command`
 

@@ -1,6 +1,6 @@
 name: run-matlab-command (with optional timeout=>success)
 description: >
-  Run MATLAB commands in CI. Optionally enforce a timeout and treat timeout as success. Supports Linux/macOS runners.
+  Run MATLAB commands in CI. Optionally enforce a time limit and treat timeout as success. Supports Linux/macOS runners.
 
 branding:
   icon: play
@@ -11,10 +11,10 @@ inputs:
     description: MATLAB commands to execute (as in matlab-actions/run-command). Multi-line supported.
     required: true
 
-  timeout:
+  timelimit:
     description: >
       Optional. If set (e.g. 5h, 45m, 300s), terminate the step after this duration and mark it as success.
-      If empty, no timeout is applied.
+      If empty, no time limit is applied.
     required: false
     default: ""
 
@@ -28,7 +28,7 @@ inputs:
     required: false
     default: "true"
 
-  # Passed through to success-on-timeout when timeout is set
+  # Passed through to run-bash-command when timelimit is set
   signal:
     description: Signal sent when the time limit is reached (passed to timeout/gtimeout).
     required: false
@@ -38,17 +38,17 @@ inputs:
     required: false
     default: "30s"
   quiet:
-    description: Reduce log output (passed to success-on-timeout).
+    description: Reduce log output (passed to run-bash-command).
     required: false
     default: "false"
 
 outputs:
   timed_out:
-    description: "true if the timeout was reached (and treated as success), else false."
-    value: ${{ steps.sot.outputs.timed_out || steps.direct.outputs.timed_out }}
+    description: "true if the time limit was reached (and treated as success), else false."
+    value: ${{ steps.rbc.outputs.timed_out || steps.direct.outputs.timed_out }}
   exit_code:
     description: "Exit code of the underlying command (124 typically indicates timeout)."
-    value: ${{ steps.sot.outputs.exit_code || steps.direct.outputs.exit_code }}
+    value: ${{ steps.rbc.outputs.exit_code || steps.direct.outputs.exit_code }}
   run_matlab_command_path:
     description: "Resolved path to run-matlab-command."
     value: ${{ steps.install.outputs.rmc_path }}
@@ -158,9 +158,9 @@ runs:
         echo "script_path=$script_path" >> "$GITHUB_OUTPUT"
         echo "matlab_eval=$matlab_eval" >> "$GITHUB_OUTPUT"
 
-    - name: Run MATLAB (no timeout)
+    - name: Run MATLAB (no time limit)
       id: direct
-      if: ${{ inputs.timeout == '' }}
+      if: ${{ inputs.timelimit == '' }}
       shell: bash
       run: |
         set -Eeuo pipefail
@@ -178,12 +178,12 @@ runs:
         echo "exit_code=$ec" >> "$GITHUB_OUTPUT"
         exit "$ec"
 
-    - name: Run MATLAB with timeout (timeout=>success)
-      id: sot
-      if: ${{ inputs.timeout != '' }}
-      uses: equipez/success-on-timeout@v1
+    - name: Run MATLAB with time limit (timeout=>success)
+      id: rbc
+      if: ${{ inputs.timelimit != '' }}
+      uses: equipez/run-bash-command@v2
       with:
-        time: ${{ inputs.timeout }}
+        timelimit: ${{ inputs.timelimit }}
         signal: ${{ inputs.signal }}
         kill-after: ${{ inputs.kill-after }}
         working-directory: ${{ inputs.working-directory }}

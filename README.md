@@ -118,9 +118,6 @@ If MathWorks' `run-matlab-command` stops working, consider using the officially 
 [`matlab-batch` utility](https://github.com/mathworks-ref-arch/matlab-dockerfile/blob/main/alternates/non-interactive/MATLAB-BATCH.md).
 `matlab-batch` needs a [MATLAB batch licensing token](https://github.com/matlab-actions#use-matlab-batch-licensing-token)
 provided with the `MLM_LICENSE_TOKEN` environment variable via a [secret](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets).
-For details on using `matlab-batch` and MATLAB batch licensing token, see
-https://github.com/matlab-actions#use-matlab-batch-licensing-token and
-https://github.com/mathworks-ref-arch/matlab-dockerfile/blob/main/alternates/non-interactive/MATLAB-BATCH.md.
 
 ## License
 

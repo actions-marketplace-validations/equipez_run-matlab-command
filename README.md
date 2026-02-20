@@ -1,4 +1,4 @@
-# equipez/run-matlab-command
+# equipez/run-matlab-command (**vibe-coded, use at your own risk!!!**)
 
 Run MATLAB commands in GitHub Actions using MathWorks `run-matlab-command`.
 Optionally enforce a `timeout` and treat timeout as **success** (exit code `0`).

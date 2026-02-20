@@ -1,6 +1,9 @@
-name: run-matlab-command (with optional timeout => success)
+name: Run MATLAB Command
 description: >
   Run MATLAB commands in CI. Optionally enforce a time limit and treat timeout as success. Supports Linux/macOS runners.
+
+author: >
+  ZHANG Zaikun (https://www.zhangzk.net)
 
 branding:
   icon: play

@@ -130,9 +130,7 @@ runs:
         set -Eeuo pipefail
 
         # Write the MATLAB commands into a temporary .m file (avoids quoting issues)
-        base="${RUNNER_TEMP:-$HOME/tmp}"
-        mkdir -p "$base"
-
+        base="./"  # Use current directory for script to respect relative paths in commands
         script_path="$base/run_matlab_command_${GITHUB_RUN_ID:-0}_${GITHUB_RUN_ATTEMPT:-0}.m"
         printf '%s\n' "$MATLAB_COMMAND" > "$script_path"
 

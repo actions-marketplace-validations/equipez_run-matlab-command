@@ -1,4 +1,4 @@
-name: Run MATLAB Command
+name: Run MATLAB Command with Options
 description: >
   Run MATLAB commands in CI. Optionally enforce a time limit and treat timeout as success. Supports Linux/macOS runners.
 

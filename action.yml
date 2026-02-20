@@ -1,7 +1,6 @@
 name: run-matlab-command (with optional timeout=>success)
 description: >
-  Run MATLAB commands in CI using MathWorks run-matlab-command. Optionally enforce a timeout
-  and treat timeout as success (exit 0). Supports Linux/macOS runners.
+  Run MATLAB commands in CI. Optionally enforce a timeout and treat timeout as success. Supports Linux/macOS runners.
 
 branding:
   icon: play

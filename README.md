@@ -1,10 +1,12 @@
-# equipez/run-matlab-command (**vibe-coded, use at your own risk!!!**)
+# equipez/run-matlab-command
 
-Run MATLAB commands in GitHub Actions using MathWorks `run-matlab-command`.
+Run MATLAB commands in GitHub Actions using MathWorks' `run-matlab-command`.
 Optionally enforce a `timeout` and treat timeout as **success** (exit code `0`).
 
 This action is designed for long-running stress tests where “ran long enough without crashing” is considered a pass.
 It is a homemade solution to https://github.com/matlab-actions/run-command/issues/84.
+
+**Vibe-coded, use at your own risk!!!**
 
 ## Supported runners / platforms
 
@@ -18,7 +20,7 @@ Windows is **not** supported.
 ### Requirements on the runner
 
 - Bash
-- `curl` (used to download MathWorks `run-matlab-command` if it is not already available)
+- `curl` (used to download MathWorks' `run-matlab-command` if it is not already available)
 - You must install and license MATLAB first, for example, using `matlab-actions/setup-matlab`.
 
 **This action only runs commands; it does not set up MATLAB licensing by itself.**
@@ -79,7 +81,7 @@ it may be indistinguishable from a timeout under the current design of the timeo
 | `command` | yes | — | MATLAB commands to execute (multi-line supported). |
 | `timeout` | no | `""` | If set (e.g. `5h`, `45m`, `300s`), terminate after this duration and mark as success. |
 | `working-directory` | no | `""` | Working directory to run from. |
-| `install-run-matlab-command` | no | `true` | Install `run-matlab-command` if missing. |
+| `install-run-matlab-command` | no | `true` | Install MathWorks' `run-matlab-command` if missing. |
 | `signal` | no | `TERM` | Signal passed to timeout wrapper (only used if `timeout` is set). |
 | `kill-after` | no | `30s` | Kill-after passed to timeout wrapper (only used if `timeout` is set). |
 | `quiet` | no | `false` | Reduce logs (only used if `timeout` is set). |
@@ -90,19 +92,19 @@ it may be indistinguishable from a timeout under the current design of the timeo
 |---|---|
 | `timed_out` | `true` if the timeout was reached (and treated as success), else `false`. |
 | `exit_code` | Exit code of the underlying command (note: `124` typically indicates timeout). |
-| `run_matlab_command_path` | Path to the `run-matlab-command` binary. |
+| `run_matlab_command_path` | Path to the MathWorks' `run-matlab-command` binary. |
 | `script_path` | Path to the generated `.m` script file containing your commands. |
 
 ## How it works
 
 This action performs the following steps.
 
-1. Ensures `run-matlab-command` is available (downloads it from MathWorks if needed).
+1. Ensures MathWorks' `run-matlab-command` is available (downloads it from MathWorks if needed).
 2. Writes your `command` into a temporary `.m` file.
 3. Executes `run-matlab-command "run('<file>');"`.
 4. If `timeout` is set, wraps the execution using `equipez/success-on-timeout` so that timeout becomes success.
 
-## About `run-matlab-command`
+## About MathWorks' `run-matlab-command`
 
 This action executes MATLAB via MathWorks’ `run-matlab-command` utility, which is designed for CI usage.
 In some CI configurations, invoking the MATLAB executable directly (for example `matlab -batch`) may fail due
